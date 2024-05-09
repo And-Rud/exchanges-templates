@@ -12,13 +12,13 @@ const httpBase = "https://api.bybit.com";
 //   category: "linear",
 //   symbol: "XRPUSDT",
 //   side: "Buy",
-//   orderType: "MARKET",
+//   orderType: "LIMIT",
 //   price: "0.2",
 //   qty: "25",
 //   timeInForce: "GTC",
 //   isLeverage: 1,
 //   stopPrice: "0.15",
-//   // takeProfit: "0.3",
+//   takeProfit: "0.3",
 //   // stopLoss: "0.1",
 // });
 
@@ -35,31 +35,42 @@ const httpBase = "https://api.bybit.com";
 // set_leverage({
 //   category: "linear",
 //   symbol: "XRPUSDT",
-//   buyLeverage: "7",
-//   sellLeverage: "7",
+//   buyLeverage: "1",
+//   sellLeverage: "1",
+// });
+
+// switch_mode({
+//   category: "linear",
+//   symbol: "XRPUSDT",
+//   mode: 0, //0 or 3
 // });
 
 // change_margin_type({
-//   setMarginMode: "REGULAR_MARGIN", //REGULAR_MARGIN, ISOLATED_MARGIN
+//   setMarginMode: "ISOLATED_MARGIN", //REGULAR_MARGIN, ISOLATED_MARGIN
 // });
 
 // cancel_order({
 //   category: "linear",
 //   symbol: "XRPUSDT",
-//   orderId: "a177b7c3-0b87-45be-ba25-1b20cc1f6e9c",
+//   orderId: "a2ff202f-1c74-4742-a860-12bece382fec",
 // });
 
 // cancel_openOrders({
 //   category: "linear",
+//   symbol: "XRPUSDT",
 // });
 
-// get_openOrders("category=linear");
+// get_openOrders("category=linear&symbol=XRPUSDT");
 
 // get_server_time();
 
 // get_position("category=linear&symbol=XRPUSDT");
 
-// get_openOrder("category=linear&orderId=1671961772728519424");
+// get_tickers("category=linear&symbol=XRPUSDT");
+
+// get_symbols("category=linear");
+
+// get_openOrder("category=linear&orderId=a2ff202f-1c74-4742-a860-12bece382fec");
 
 function sign_sha(data) {
   return crypto
@@ -186,6 +197,17 @@ async function set_leverage(j) {
   return response;
 }
 
+async function switch_mode(j) {
+  const endpoint = "/v5/position/switch-mode";
+  const response = await call_api(
+    endpoint,
+    "POST",
+    JSON.stringify(j),
+    "Switch Mode",
+  );
+  return response;
+}
+
 async function cancel_openOrders(j) {
   const endpoint = "/v5/order/cancel-all";
   const response = await call_api(
@@ -215,6 +237,12 @@ async function get_position(j) {
   return response;
 }
 
+async function get_tickers(j) {
+  const endpoint = "/v5/market/tickers";
+  const response = await call_api(endpoint, "GET", j, "Get Position");
+  return response;
+}
+
 async function get_openOrder(j) {
   const endpoint = "/v5/order/realtime";
   const response = await call_api(endpoint, "GET", j, "Get Open Order");
@@ -223,8 +251,7 @@ async function get_openOrder(j) {
 
 async function get_symbols(j) {
   const endpoint = "/v5/market/instruments-info";
-  const data = `category=${j.category}`;
-  const response = await call_api(endpoint, "GET", data, "Get ByBit Symbols");
+  const response = await call_api(endpoint, "GET", j, "Get ByBit Symbols");
 
   return response;
 }
