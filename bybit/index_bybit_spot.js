@@ -10,14 +10,14 @@ const httpBase = "https://api.bybit.com";
 
 // new_order({
 //   category: "spot",
-//   symbol: "BTCUSDT",
+//   symbol: "XRPUSDT",
 //   side: "BUY",
-//   orderType: "LIMIT",
-//   price: "55000",
-//   qty: "0.00011",
+//   orderType: "Limit",
+//   price: "0.2",
+//   qty: "30",
 //   timeInForce: "GTC",
 //   // triggerPrice: "55800",
-//   // orderFilter: "StopOrder",
+//   // orderFilter: "Order",
 // });
 
 // cancel_order({
@@ -107,7 +107,12 @@ async function get_wallet_balances(j) {
 
 async function new_order(j) {
   const endpoint = "/v5/order/create";
-  const response = await call_api(endpoint, "POST", j, "Create Order");
+  const response = await call_api(
+    endpoint,
+    "POST",
+    JSON.stringify(j),
+    "Create Order",
+  );
   return response;
 }
 
