@@ -1,9 +1,9 @@
 import crypto from "crypto";
 import axios from "axios";
 const basePath = "https://api.gateio.ws";
-const apikey = "4f7869a388d3f69b06917d147ca8afe4";
+const apikey = "";
 const apiSecret =
-  "f7914b87719cb61718db7951940de5c28014665f94521868a99114c721bbbbbd";
+  "";
 
 async function request(method, url, queryParameters, payloadString) {
   const timestamp = Math.floor(Date.now() / 1000).toString();
