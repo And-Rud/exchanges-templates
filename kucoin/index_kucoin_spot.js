@@ -125,6 +125,20 @@ async function getAllOrders() {
   return await http_request("GET", endpoint, body);
 }
 
+async function getOrder(j) {
+  const body = "";
+  const endpoint = `/api/v1/orders/${j.orderId}`;
+
+  return await http_request("GET", endpoint, body);
+}
+
+async function getSymbolPrice(j) {
+  const body = "";
+  const endpoint = `/api/v1/market/orderbook/level1?symbol=${j.symbol}`;
+
+  return await http_request("GET", endpoint, body);
+}
+
 async function sltpOrder() {
   const endpoint = "/api/v3/oco/order";
   const body = {
@@ -139,10 +153,26 @@ async function sltpOrder() {
   return await http_request("POST", endpoint, JSON.stringify(body));
 }
 
+async function sltpLimitOrder() {
+  const endpoint = "/api/v3/oco/order";
+  const body = {
+    symbol: "XRP-USDT",
+    side: "buy",
+    stopPrice: "0.7",
+    price: "0.2",
+    size: "30",
+    // limitPrice: "0.6",
+    clientOid: `${Date.now()}`,
+  };
+  return await http_request("POST", endpoint, JSON.stringify(body));
+}
+
 // marketOrder();
-// get_account();
 // limitOrder();
+// get_account();
 // cancelOrder();
 // cancelAllOrders();
 // getAllOrders();
-// sltpOrder();
+// getOrder({ orderId: "664afa0c05b82d0007fe371e" });
+// sltpLimitOrder();
+// getSymbolPrice({ symbol: "XRP-USDT" });
