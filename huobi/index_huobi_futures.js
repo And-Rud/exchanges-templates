@@ -5,8 +5,6 @@ import moment from "moment";
 
 const apikey = "";
 const apiSecret = "";
-const recvWindow = 10000;
-const timeout = 10000;
 const host = "api.hbdm.com";
 
 function put_post(name, value) {
@@ -100,6 +98,7 @@ async function http_request(method, endpoint, body) {
   console.log("config", config);
   try {
     let res = await axios(config);
+    console.log("res", res.data);
     return {
       statusCode: 200,
       status: "success",
@@ -107,54 +106,180 @@ async function http_request(method, endpoint, body) {
     };
   } catch (e) {
     console.log(e);
-    throw new Error(e);
   }
 }
 
 async function get_account() {
   const endpoint = `/linear-swap-api/v1/swap_balance_valuation`;
-  const method = "POST";
   const body = {
     valuation_asset: "USDT",
   };
-  return await http_request(method, endpoint, body);
+  return await http_request("POST", endpoint, body);
 }
 
-// let res = await get_account();
+async function set_leverage(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_switch_lever_rate`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_switch_lever_rate`);
+  const body = {
+    contract_code: `${j.symbol}`,
+    lever_rate: `${j.leverage}`,
+    pair: `${j.symbol}`, //only for cross
+    contract_type: "swap", //only for cross
+  };
+  return await http_request("POST", endpoint, body);
+}
 
-// console.log("res", res.data);
+async function get_order(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_order_info`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_order_info`);
+  const body = {
+    order_id: `${j.orderId}`, // put here order_id_str in response
+    client_order_id: `${j.client_order_id}`,
+    contract_code: `${j.symbol}`,
+    pair: `${j.symbol}`, //field for cross
+  };
+  return await http_request("POST", endpoint, body);
+}
 
-// 2. The following is an example of the main method for sending POST requests:
-// const method = 'POST';
-// const post_body = {
-//     "from": "spot",
-//     "to": "linear-swap",
-//     "currency": "usdt",
-//     "amount": "0.01",
-//     "margin-account": "USDT"
-// };
-// const json_data = JSON.stringify(post_body);
-//
-// const builder = new UrlParamsBuilder();
-// create_signature(api_key, secret_key, method, `https://${host}${api_path_post}`, builder);
-//
-// const request = create_request(host, method, api_path_post, builder);
-//
-// const options = {
-//     headers: request.header
-// };
-//
-// const postRequest = https.request(request.url, options, (response) => {
-//     let data = '';
-//
-//     response.on('data', (chunk) => {
-//         data += chunk;
-//     });
-//
-//     response.on('end', () => {
-//         console.log('[Response]:', data);
-//     });
+async function get_allOrders(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_openorders`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_openorders`);
+  const body = {
+    contract_code: `${j.symbol}`,
+    pair: `${j.symbol}`, //field for cross
+    page_index: 1,
+    page_size: 50,
+    sort_by: "created_at",
+    trade_type: 0,
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+async function get_position(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_position_info`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_position_info`);
+  const body = {
+    contract: `${j.symbol}`,
+    contract_code: `${j.symbol}`,
+    pair: `${j.symbol}`,
+    contract_type: "swap",
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+async function cancel_order(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_cancel`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_cancel`);
+  const body = {
+    order_id: `${j.orderId}`,
+    client_order_id: `${j.client_order_id}`,
+    contract_code: `${j.symbol}`,
+    pair: `${j.symbol}`, //field for cross
+    contract_type: "swap",
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+async function cancel_allOrders(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_cancelall`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_cancelall`);
+  const body = {
+    contract_code: `${j.symbol}`,
+    direction: `${j.side}`, //buy or sell
+    offset: `${j.offset}`, //open
+    contract_type: "swap", //for croos
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+async function new_limitOrder(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_order`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_order`);
+  const body = {
+    contract_code: "xrp-usdt",
+    direction: "buy",
+    offset: "open",
+    price: "0.3",
+    lever_rate: 5,
+    volume: 1,
+    order_price_type: "limit",
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+async function new_marketOrder(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_order`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_order`);
+  const body = {
+    contract_code: "xrp-usdt",
+    direction: "buy",
+    offset: "open",
+    lever_rate: 5,
+    volume: 1,
+    order_price_type: "market",
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+async function new_sltpLimitOrder(j) {
+  let endpoint;
+  j.isolated
+    ? (endpoint = `/linear-swap-api/v1/swap_order`)
+    : (endpoint = `/linear-swap-api/v1/swap_cross_order`);
+  const body = {
+    contract_code: "xrp-usdt",
+    direction: "buy",
+    offset: "open",
+    lever_rate: 1,
+    volume: 1,
+    price: "0.3",
+    order_price_type: "limit",
+    tp_trigger_price: "0.7",
+    tp_order_price: "0.7",
+    tp_order_price_type: "limit",
+    sl_trigger_price: "0.2",
+    sl_order_price: "0.2",
+    sl_order_price_type: "limit",
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+// get_account();
+// new_limitOrder({ isolated: true });
+// new_marketOrder({ isolated: true });
+// cancel_order({
+//   isolated: true,
+//   symbol: "XRP-USDT",
+//   orderId: "1242882924731932672",
 // });
-//
-// postRequest.write(json_data);
-// postRequest.end();
+// cancel_allOrders({
+//   isolated: true,
+//   side: "buy",
+//   offset: "open",
+//   symbol: "XRP-USDT",
+// });
+// set_leverage({ isolated: true, symbol: "XRP-USDT", leverage: "1"});
+// get_order({
+//   isolated: true,
+//   symbol: "XRP-USDT",
+//   orderId: "1242882924731932672",
+// });
+// get_allOrders({ isolated: true, symbol: "XRP-USDT" });
+// get_position({ isolated: true, symbol: "XRP-USDT" });
+// new_sltpLimitOrder({ isolated: true });
