@@ -4,8 +4,7 @@ import Big from "big.js";
 import CryptoJS from "crypto-js";
 
 const apikey = "";
-const apiSecret =
-  "";
+const apiSecret = "";
 const httpBase = "https://api.bitget.com";
 const passphrase = "";
 
@@ -30,27 +29,9 @@ function parseParamsToStr(params) {
 }
 async function request(method, endpoint, body, queryParams) {
   const timestamp = Date.now().toString(); //Math.round(new Date())
-  // let requestPath = "/api/v2/mix/order/place-order";
-
-  // // POST
-  // const params = {
-  //   symbol: "TRXUSDT",
-  //   marginCoin: "USDT",
-  //   price: 0.0555,
-  //   size: 551,
-  //   side: "buy",
-  //   orderType: "limit",
-  //   force: "normal",
-  // };
-  // const body = JSON.stringify(params);
-  // let sign = sign(
-  //   preHash(timestamp, "POST", requestPath, body)
-  // );
-  // console.log(sign);
-
-  // GET
-
+  body ? (body = JSON.stringify(body)) : null;
   let signString = timestamp + method + endpoint + queryParams + body;
+  console.log("signString", signString);
   let sign = crypto
     .createHmac("sha256", apiSecret)
     .update(signString)
@@ -68,18 +49,20 @@ async function request(method, endpoint, body, queryParams) {
   };
   console.log("Headers", headers);
 
-  const requestOptions = {
+  const config = {
     method: method,
-    url: httpBase + endpoint + queryParams,
+    url: httpBase + endpoint + (queryParams ? queryParams : ""),
     headers: headers,
     data: body,
   };
+  console.log("config", config);
   try {
-    const res = await axios(requestOptions);
+    const res = await axios(config);
+    console.log("res", res.data);
     return {
       statusCode: 200,
       status: "success",
-      content: res.data.data,
+      content: res.data,
     };
   } catch (e) {
     console.log(e);
@@ -87,14 +70,192 @@ async function request(method, endpoint, body, queryParams) {
 }
 
 async function get_account() {
-  const method = "GET";
   const endpoint = "/api/v2/mix/account/accounts";
   const body = null;
   const queryParams = "?productType=USDT-FUTURES";
-  const response = await request(method, endpoint, body, queryParams);
-  return response;
+  return await request("GET", endpoint, body, queryParams);
 }
 
-// let res = await get_account();
+async function get_position(j) {
+  const endpoint = "/api/v2/mix/position/single-position";
+  const body = null;
+  const queryParams = `?symbol=${j.symbol.toLowerCase()}&productType=${j.productType.toUpperCase()}&marginCoin=${j.marginCoin.toUpperCase()}`;
+  return await request("GET", endpoint, body, queryParams);
+}
 
-// console.log("res", res);
+async function get_order(j) {
+  const endpoint = "/api/v2/mix/order/detail";
+  const body = null;
+  const queryParams = `?symbol=${j.symbol.toLowerCase()}&productType=${j.productType.toUpperCase()}&orderId=${j.orderId}`;
+  return await request("GET", endpoint, body, queryParams);
+}
+
+async function get_openOrders(j) {
+  const endpoint = "/api/v2/mix/order/orders-pending";
+  const body = null;
+  const queryParams = `?productType=${j.productType.toLowerCase()}`;
+  return await request("GET", endpoint, body, queryParams);
+}
+
+async function set_leverage(j) {
+  const endpoint = "/api/v2/mix/account/set-leverage";
+  const body = {
+    symbol: `${j.symbol.toUpperCase()}`,
+    productType: `${j.productType.toLowerCase()}`,
+    marginCoin: `${j.marginCoin.toUpperCase()}`,
+    leverage: `${j.leverage}`,
+    holdSide: `${j.holdSide}`,
+  };
+  const queryParams = ``;
+  return await request("POST", endpoint, body, queryParams);
+}
+
+async function change_marginMode(j) {
+  const endpoint = "/api/v2/mix/account/set-margin-mode";
+  const body = {
+    symbol: `${j.symbol.toUpperCase()}`,
+    productType: `${j.productType.toLowerCase()}`,
+    marginCoin: `${j.marginCoin.toUpperCase()}`,
+    marginMode: `${j.marginMode}`,
+  };
+  const queryParams = ``;
+  return await request("POST", endpoint, body, queryParams);
+}
+
+async function cancel_order(j) {
+  const endpoint = "/api/v2/mix/order/cancel-order";
+  const body = {
+    orderId: `${j.orderId}`,
+    symbol: `${j.symbol.toUpperCase()}`,
+    productType: `${j.productType.toLowerCase()}`,
+    marginCoin: `${j.marginCoin.toUpperCase()}`,
+  };
+  const queryParams = ``;
+  return await request("POST", endpoint, body, queryParams);
+}
+
+async function cancel_allOrders(j) {
+  const endpoint = "/api/v2/mix/order/cancel-all-orders";
+  const body = {
+    symbol: `${j.symbol.toUpperCase()}`,
+    productType: `${j.productType.toLowerCase()}`,
+    marginCoin: `${j.marginCoin.toUpperCase()}`,
+  };
+  const queryParams = ``;
+  return await request("POST", endpoint, body, queryParams);
+}
+
+async function new_marketOrder() {
+  const endpoint = "/api/v2/mix/order/place-order";
+  const body = {
+    symbol: "XRPUSDT",
+    productType: "usdt-futures",
+    marginMode: "isolated",
+    marginCoin: "USDT",
+    size: "25",
+    side: "buy",
+    tradeSide: "open",
+    orderType: "market",
+    force: "gtc",
+    clientOid: `${Date.now()}`,
+  };
+  return await request("POST", endpoint, body, "");
+}
+
+async function new_limitOrder() {
+  const endpoint = "/api/v2/mix/order/place-order";
+  const body = {
+    symbol: "XRPUSDT",
+    productType: "usdt-futures",
+    marginMode: "isolated",
+    marginCoin: "USDT",
+    size: "25",
+    price: "0.3",
+    side: "buy",
+    tradeSide: "open",
+    orderType: "limit",
+    force: "gtc",
+    clientOid: `${Date.now()}`,
+  };
+  return await request("POST", endpoint, body, "");
+}
+
+async function new_tpslLimitOrder() {
+  const endpoint = "/api/v2/mix/order/place-order";
+  const body = {
+    symbol: "XRPUSDT",
+    productType: "usdt-futures",
+    marginMode: "isolated",
+    marginCoin: "USDT",
+    size: "25",
+    price: "0.3",
+    side: "buy",
+    tradeSide: "open",
+    orderType: "limit",
+    force: "gtc",
+    presetStopSurplusPrice: "0.7",
+    presetStopLossPrice: "0.2",
+    clientOid: `${Date.now()}`,
+  };
+  return await request("POST", endpoint, body, "");
+}
+
+async function new_tpslOrder() {
+  const endpoint = "/api/v2/mix/order/place-order";
+  const body = {
+    symbol: "XRPUSDT",
+    productType: "usdt-futures",
+    marginMode: "isolated",
+    marginCoin: "USDT",
+    size: "18",
+    side: "buy",
+    tradeSide: "open",
+    orderType: "market",
+    force: "gtc",
+    presetStopSurplusPrice: "0.7",
+    presetStopLossPrice: "0.2",
+    clientOid: `${Date.now()}`,
+  };
+  return await request("POST", endpoint, body, "");
+}
+
+// new_tpslLimitOrder();
+// new_tpslOrder();
+// get_account();
+// new_limitOrder();
+// new_marketOrder();
+// get_position({
+//   symbol: "XRPUSDT",
+//   productType: "USDT-FUTURES",
+//   marginCoin: "USDT",
+// });
+// get_order({
+//   symbol: "XRPUSDT",
+//   productType: "USDT-FUTURES",
+//   orderId: "1177151178774003731",
+// });
+// get_openOrders({ productType: "USDT-FUTURES" });
+// cancel_order({
+//   symbol: "XRPUSDT",
+//   productType: "USDT-FUTURES",
+//   marginCoin: "USDT",
+//   orderId: "1177151178774003731",
+// });
+// cancel_allOrders({
+//   symbol: "XRPUSDT",
+//   productType: "USDT-FUTURES",
+//   marginCoin: "USDT",
+// });
+// set_leverage({
+//   symbol: "XRPUSDT",
+//   productType: "USDT-FUTURES",
+//   marginCoin: "USDT",
+//   leverage: 2,
+//   holdSide: "long",
+// });
+// change_marginMode({
+//   symbol: "XRPUSDT",
+//   productType: "USDT-FUTURES",
+//   marginCoin: "USDT",
+//   marginMode: "crossed", //isolated or crossed
+// });
