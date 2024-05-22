@@ -4,8 +4,7 @@ import Big from "big.js";
 import CryptoJS from "crypto-js";
 
 const apikey = "";
-const apiSecret =
-  "";
+const apiSecret ="";
 const httpBase = "https://api.bitget.com";
 const passphrase = "";
 
@@ -30,27 +29,9 @@ function parseParamsToStr(params) {
 }
 async function request(method, endpoint, body, queryParams) {
   const timestamp = Date.now().toString(); //Math.round(new Date())
-  // let requestPath = "/api/v2/mix/order/place-order";
-
-  // // POST
-  // const params = {
-  //   symbol: "TRXUSDT",
-  //   marginCoin: "USDT",
-  //   price: 0.0555,
-  //   size: 551,
-  //   side: "buy",
-  //   orderType: "limit",
-  //   force: "normal",
-  // };
-  // const body = JSON.stringify(params);
-  // let sign = sign(
-  //   preHash(timestamp, "POST", requestPath, body)
-  // );
-  // console.log(sign);
-
-  // GET
-
+  body ? (body = JSON.stringify(body)) : null;
   let signString = timestamp + method + endpoint + queryParams + body;
+  console.log("signString", signString);
   let sign = crypto
     .createHmac("sha256", apiSecret)
     .update(signString)
@@ -68,14 +49,16 @@ async function request(method, endpoint, body, queryParams) {
   };
   console.log("Headers", headers);
 
-  const requestOptions = {
+  const config = {
     method: method,
-    url: httpBase + endpoint,
+    url: httpBase + endpoint + (queryParams ? queryParams : ""),
     headers: headers,
     data: body,
   };
+  console.log("config", config);
   try {
-    const res = await axios(requestOptions);
+    const res = await axios(config);
+    console.log("res", res.data);
     return {
       statusCode: 200,
       status: "success",
@@ -87,12 +70,10 @@ async function request(method, endpoint, body, queryParams) {
 }
 
 async function get_account() {
-  const method = "GET";
   const endpoint = "/api/v2/spot/account/assets";
   const body = null;
   const queryParams = "";
-  const response = await request(method, endpoint, body, queryParams);
-  return response;
+  return await request("GET", endpoint, body, queryParams);
 }
 
 async function getPriceTicker() {
@@ -100,11 +81,100 @@ async function getPriceTicker() {
   const endpoint = "/api/v2/spot/market/tickers";
   const body = null;
   const queryParams = "";
-  const response = await request(method, endpoint, body, queryParams);
-  return response;
+  return await request(method, endpoint, body, queryParams);
 }
 
-// let res = await get_account();
-// let res = await getPriceTicker();
+async function getPrice(symbol) {
+  const endpoint = "/api/v2/spot/market/tickers";
+  const queryParams = `?symbol=${symbol}`;
+  return await request("GET", endpoint, null, queryParams);
+}
 
-// console.log("res", res);
+async function cancel_order(j) {
+  const endpoint = "/api/v2/spot/trade/cancel-order";
+  const body = { symbol: `${j.symbol}`, orderId: `${j.orderId}` };
+  return await request("POST", endpoint, body, "");
+}
+
+async function cancel_allOrders(j) {
+  const endpoint = "/api/v2/spot/trade/cancel-symbol-order";
+  const body = { symbol: `${j.symbol}` };
+  return await request("POST", endpoint, body, "");
+}
+
+async function get_order(j) {
+  const endpoint = "/api/v2/spot/trade/orderInfo";
+  const queryParams = `?orderId=${j.orderId}`;
+  return await request("GET", endpoint, null, queryParams);
+}
+
+async function get_openOrders(j) {
+  const endpoint = "/api/v2/spot/trade/unfilled-orders";
+  const queryParams = ``;
+  return await request("GET", endpoint, null, queryParams);
+}
+
+async function new_limitOrder() {
+  const endpoint = "/api/v2/spot/trade/place-order";
+  const body = {
+    symbol: "XRPUSDT",
+    side: "buy",
+    orderType: "limit",
+    force: "gtc",
+    price: "0.3",
+    size: "25",
+    clientOid: `${Date.now()}`,
+  };
+  return await request("POST", endpoint, body, "");
+}
+
+async function new_marketOrder() {
+  const endpoint = "/api/v2/spot/trade/place-order";
+  const body = {
+    symbol: "XRPUSDT",
+    side: "buy",
+    orderType: "market",
+    size: "7",
+    clientOid: `${Date.now()}`,
+  };
+  return await request("POST", endpoint, body, "");
+}
+
+async function new_sltpLimitOrder() {
+  const endpoint = "/api/v2/spot/trade/place-order";
+  const body = {
+    symbol: "XRPUSDT",
+    side: "buy",
+    orderType: "limit",
+    force: "gtc",
+    price: "0.3",
+    size: "25",
+    triggerPrice: "0.7",
+    tpslType: "tpsl",
+  };
+  return await request("POST", endpoint, body, "");
+}
+
+async function new_sltpOrder() {
+  const endpoint = "/api/v2/spot/trade/place-order";
+  const body = {
+    symbol: "XRPUSDT",
+    side: "buy",
+    orderType: "market",
+    size: "7",
+    triggerPrice: "0.7",
+    tpslType: "tpsl",
+  };
+  return await request("POST", endpoint, body, "");
+}
+
+// get_account();
+// new_limitOrder();
+// new_marketOrder();
+// cancel_order({ symbol: "XRPUSDT", orderId: "1177113058197540875" });
+// get_order({ orderId: "1177113058197540875" });
+// cancel_allOrders({ symbol: "XRPUSDT" });
+// get_openOrders();
+// getPrice("XRPUSDT");
+// new_sltpLimitOrder();
+// new_sltpOrder();
