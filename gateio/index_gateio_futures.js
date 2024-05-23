@@ -50,14 +50,14 @@ async function request(method, url, queryParameters, payloadString) {
   console.log("config", config);
   try {
     let res = await axios(config);
-    console.log("res", res.data);
+    console.log("res", res);
     // return {
     //   statusCode: 200,
     //   status: "success",
     //   content: res.data,
     // };
   } catch (e) {
-    console.log(e.response.data);
+    console.log(e);
   }
 }
 
@@ -105,8 +105,8 @@ async function cancel_order(j) {
 }
 
 async function set_leverage(j) {
-  //not work!!!!
-  const url = `/api/v4/futures/${j.settle}/positions/${j.symbol}/leverage`;
+  //not work, in Gateio Service Temporarily Unavailable!!!!
+  const url = `/futures/${j.settle}/positions/${j.symbol}/leverage`;
   const queryParameters = `leverage=${j.leverage}`;
   const payloadString = "";
   return request("POST", url, queryParameters, payloadString);
@@ -142,34 +142,34 @@ async function new_marketOrder() {
   return request("POST", url, queryParameters, payloadString);
 }
 
-async function new_sltpOrder(j) {
+async function new_sltpLimitOrder(j) {
   //this order dont work!!!
   const url = `/api/v4/futures/usdt/price_orders`;
   const queryParameters = "";
   const payloadString = {
     initial: {
-      contract: "BTC_USDT",
-      size: 100,
-      price: "0",
+      contract: "XRP_USDT",
+      size: 1,
+      price: "0.3",
+      close: false,
+      tif: "gtc",
+      text: "web",
       order_type: "close-long-order",
-      tif: "ioc",
     },
     trigger: {
       strategy_type: 0,
-      price_type: 2,
-      price: "30000",
-      rule: 2, //if 1 - price must be < last price, if 2- price>last price
+      price_type: 1,
+      price: "0.7",
+      rule: 1,
       expiration: 86400,
-      tif: "gtc",
       order_type: "close-long-order",
     },
-    order_type: "close-long-position",
   };
   return request("POST", url, queryParameters, payloadString);
 }
 
 // account_information();
-// set_leverage({ symbol: "XRP_USDT", leverage: 10, settle: "usdt" });
+// set_leverage({ symbol: "BTC_USDT", leverage: 5, settle: "usdt" });
 // new_limitOrder();
 // new_marketOrder();
 // cancel_allOpenOrders({ symbol: "XRP_USDT", settle: "usdt" });
@@ -177,4 +177,4 @@ async function new_sltpOrder(j) {
 // get_order({ settle: "usdt", orderId: "473885400313" });
 // get_openOrders({ settle: "usdt" });
 // get_position({ symbol: "XRP_USDT", settle: "usdt" });
-// new_sltpOrder();
+// new_sltpLimitOrder();
