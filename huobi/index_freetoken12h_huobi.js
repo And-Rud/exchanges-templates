@@ -61,8 +61,8 @@ async function request(
 ) {
   const timestamp = new Date().toISOString().slice(0, 19).replace(" ", "T");
   key = {
-    key: "fd7a39cd-3cf7a7a5-86e0e9b3-dbuqg6hkte",
-    secret: "5996be01-1112ddda-9f309af6-77f6c",
+    key: "",
+    secret: "",
   };
   const builder = {
     param_map: {
