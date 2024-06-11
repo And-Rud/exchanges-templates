@@ -227,7 +227,7 @@ async function new_sltpLimitOrder() {
 }
 
 async function new_sltpOrder() {
-    //this is limit order
+  //this is limit order
   //order amount can`t be lower than 10 USDT
   let account_id = await get_account_id();
   let id = account_id.data.data[0].id;
@@ -246,7 +246,73 @@ async function new_sltpOrder() {
   return await http_request("POST", endpoint, body);
 }
 
+async function new_conditional_market() {
+  //order amount can`t be lower than 10 USDT
+  let account_id = await get_account_id();
+  let id = account_id.data.data[0].id;
+  console.log("account_id", account_id, id);
+  const endpoint = `/v2/algo-orders`;
+  const body = {
+    accountId: `${id}`,
+    clientOrderId: new Date().getTime(),
+    orderSide: "buy",
+    orderValue: "11", //in XRP
+    // orderPrice: "0.2",
+    orderSize: "11",
+    symbol: "xrpusdt",
+    stopPrice: "0.3",
+    orderType: "market",
+    // timeInForce: "gtc",
+  };
+  return await http_request("POST", endpoint, body);
+}
 
+async function new_conditional_limit() {
+  //order amount can`t be lower than 10 USDT
+  let account_id = await get_account_id();
+  let id = account_id.data.data[0].id;
+  console.log("account_id", account_id, id);
+  const endpoint = `/v2/algo-orders`;
+  const body = {
+    accountId: `${id}`,
+    clientOrderId: new Date().getTime(),
+    orderSide: "buy",
+    // orderValue: "55", //in XRP
+    orderPrice: "0.2",
+    orderSize: "50",
+    symbol: "xrpusdt",
+    stopPrice: "0.3",
+    orderType: "limit",
+    // timeInForce: "gtc",
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+async function new_trailing() {
+  //order amount can`t be lower than 10 USDT
+  let account_id = await get_account_id();
+  let id = account_id.data.data[0].id;
+  console.log("account_id", account_id, id);
+  const endpoint = `/v2/algo-orders`;
+  const body = {
+    accountId: `${id}`,
+    clientOrderId: new Date().getTime(),
+    orderSide: "buy",
+    // orderValue: "55", //in XRP
+    orderPrice: "0.2",
+    orderSize: "50",
+    symbol: "xrpusdt",
+    stopPrice: "0.3",
+    orderType: "limit",
+    trailingRate: "0.02",
+    // timeInForce: "gtc",
+  };
+  return await http_request("POST", endpoint, body);
+}
+
+// new_trailing(); //not working!!!!!
+// new_conditional_limit();
+// new_conditional_market();
 // getPriceTicker();
 // get_account();
 // new_limitOrder();
