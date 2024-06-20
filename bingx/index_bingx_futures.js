@@ -2,10 +2,8 @@ import crypto from "crypto";
 import axios from "axios";
 import Big from "big.js";
 
-const apiKey =
-  "";
-const apiSecret =
-  "";
+const apiKey =  "";
+const apiSecret =  "";
 const baseURL = "https://open-api.bingx.com";
 const timestamp = new Date().getTime();
 const recvWindow = 10000;
