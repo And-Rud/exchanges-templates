@@ -3,10 +3,8 @@ import axios from "axios";
 import Big from "big.js";
 import JSONbig from "json-bigint";
 
-const apiKey =
-  "";
-const apiSecret =
-  "";
+const apiKey =  "";
+const apiSecret =  "";
 const httpBase = "https://open-api.bingx.com";
 const timestamp = new Date().getTime();
 const recvWindow = 5000;
