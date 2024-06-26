@@ -30,7 +30,7 @@ const httpBase = "https://api.bybit.com";
 //   category: "spot",
 // });
 
-// get_openOrders("category=spot");
+get_openOrders("category=spot");
 
 // get_openOrder("category=spot&orderId=1671961772728519424");
 
@@ -73,28 +73,59 @@ async function call_api(endpoint, method, data, info) {
     headers,
     data,
   };
+  console.log("config:", config);
 
-  console.log("config: " + JSON.stringify(config));
+  try {
+    const response = await axios(config);
+    console.log("response", response);
+    if (response.status !== 200) {
+      throw new Error(JSON.stringify(response));
+    }
 
-  console.log(info + " " + config.method + " " + config.url);
+    let limits = await check_limits(response.headers, "bybit");
 
-  console.log(info + " Calling....");
-
-  const response = await axios(config);
-
-  if (response.status !== 200) {
-    throw new Error(JSON.stringify(response));
+    const formattedResp = {
+      statusCode: response.status,
+      status: "success",
+      data: response.data,
+      limits: limits,
+    };
+    console.log("formattedResp1111i111111ii1", formattedResp);
+    return formattedResp;
+  } catch (e) {
+    console.log("Error", e);
+    // throw new Error(JSON.stringify(e));
   }
+}
 
-  console.log(info + " request result: " + JSON.stringify(response.data));
+async function check_limits(headers, exchange) {
+  let limit, limitStatus, limitResetTimestamp;
+  switch (exchange) {
+    case "bybit":
+      limit = parseInt(headers["x-bapi-limit"]);
+      limitStatus = 3; //parseInt(headers["x-bapi-limit-status"]);
+      limitResetTimestamp = parseInt(headers["x-bapi-limit-reset-timestamp"]);
+      break;
+  }
+  console.log(
+    `Limit: ${limit}, Limit Status: ${limitStatus}, Limit Reset Timestamp: ${limitResetTimestamp}`,
+  );
 
-  const formattedResp = {
-    statusCode: response.status,
-    status: "success",
-    data: JSON.stringify(response.data),
-  };
-  console.log("formattedResp", formattedResp);
-  return formattedResp;
+  //if limitStatus <= 10% of limit this part of code starting and waining waitTime seconds
+  if (exchange === "bybit" && limitStatus <= Math.floor(limit / 10)) {
+    const resetTime = new Date(limitResetTimestamp);
+    const currentTime = new Date();
+    const waitTime = currentTime - resetTime;
+    console.log("waitTime", waitTime);
+
+    if (waitTime > 0) {
+      console.log(
+        `Rate limit exceeded. Waiting for ${waitTime / 1000} seconds.`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+    }
+  }
+  return { allLimits: limit, limitRemains: limitStatus };
 }
 
 async function get_wallet_balances(j) {
