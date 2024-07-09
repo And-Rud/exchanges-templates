@@ -83,45 +83,6 @@ async function getPriceTicker() {
   return response;
 }
 
-async function get_snapshot() {
-  const body = "";
-  const params = { date: new Date().toISOString().split("T")[0] };
-  const endpoint = `/api/pro/data/v1/futures/balance/snapshot`;
-  const signEndpoint = "data/v1/futures/balance/snapshot";
-  const response = await http_request(
-    "GET",
-    endpoint,
-    body,
-    signEndpoint,
-    params,
-  );
-  return response;
-}
-
-async function get_account_futures() {
-  let snapshot = await get_snapshot();
-  console.log("snapshot", snapshot.data.meta.sn);
-  const body = "";
-  const params = { sn: snapshot.data.meta.sn + 2 };
-  const endpoint = `/api/pro/data/v1/futures/balance/history`;
-  const signEndpoint = "data/v1/futures/balance/history";
-  const response = await http_request(
-    "GET",
-    endpoint,
-    body,
-    signEndpoint,
-    params,
-  );
-  console.log(
-    "response",
-    response.data.balance[response.data.balance.length - 1].data,
-  );
-  const sortedBalances = response.data.balance.sort(
-    (a, b) => b.transactTime - a.transactTime,
-  );
-  console.log("sortedBalances", sortedBalances[0]);
-  return sortedBalances;
-}
 
 // get_account();
 // account_info();
