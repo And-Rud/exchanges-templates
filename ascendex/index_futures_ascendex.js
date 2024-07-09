@@ -97,8 +97,5 @@ async function get_account_futures() {
   return sortedBalances;
 }
 
-// get_account();
-// account_info();
-// getPriceTicker();
-get_account_futures();
+// get_account_futures();
 
