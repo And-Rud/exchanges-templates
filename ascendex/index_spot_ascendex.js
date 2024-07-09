@@ -87,4 +87,3 @@ async function getPriceTicker() {
 // get_account();
 // account_info();
 // getPriceTicker();
-get_account_futures();
